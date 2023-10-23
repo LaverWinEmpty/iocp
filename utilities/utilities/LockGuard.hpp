@@ -2,15 +2,15 @@
  * @file    LockGuard.hpp
  * @author  LaverWinEmpty@google.com
  * @brief   lock guard uses typename or int as id for locking
- * @version 1.0
+ * @version 0.0.2
  * @date    2023-10-22
  *
  * @copyright Copyright (c) 2023
  *
  */
 
-#ifndef LWE__LOCKGUARD_H__
-#define LWE__LOCKGUARD_H__
+#ifndef LWE__LOCKGUARD_HPP__
+#define LWE__LOCKGUARD_HPP__
 
 #include "mutex"
 #include "atomic"
@@ -18,10 +18,9 @@
 
 /**
  * @brief lock guard, using inner class (Mutex<id> / Spin<id>)
- *
- * @warning id: const int
+ * @note  id: const int
  */
-class LockGuard
+class LockGuard abstract
 {
 public:
     /**
@@ -111,10 +110,9 @@ public:
 public:
     /**
      * @brief object
+     * @warning redundant lock => runtime error
      *
      * @tparam N object id: const int
-     *
-     * @warning redundant lock => runtime error
      */
     template<int N> class Mutex: public ILock<MutexSingleN<N>>
     {
@@ -124,10 +122,9 @@ public:
 
     /**
      * @brief object
+     * @warning redundant lock => infinite loop
      *
      * @tparam N object id: const int
-     *
-     * @warning redundant lock => infinite loop
      */
     template<int N> class Spin: public ILock<AtomicSingleN<N>>
     {
@@ -146,7 +143,6 @@ template<typename T> class TypeLock
 public:
     /**
      * @brief object
-     *
      * @warning redundant lock => runtime error
      */
     class Mutex: public LockGuard::ILock<LockGuard::MutexSingleT<T>>
@@ -157,7 +153,6 @@ public:
 
     /**
      * @brief object
-     *
      * @warning redundant lock => infinite loop
      */
     class Spin: public LockGuard::ILock<LockGuard::AtomicSingleT<T>>

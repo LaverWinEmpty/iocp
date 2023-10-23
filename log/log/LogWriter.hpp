@@ -2,8 +2,8 @@
  * @file    LogWriter.hpp
  * @author  LaverWinEmpty@google.com
  * @brief   log write utility
- * @version 1.0
- * @date    2023-10-22
+ * @version 0.0.2
+ * @date    2023-10-23
  *
  * @copyright Copyright (c) 2023
  *
@@ -15,7 +15,7 @@
 #include "windows.h"
 #include "iostream"
 #include "fstream"
-#include "../../utilities/utilities/Timer.hpp"
+#include "LogBase.hpp"
 #include "../../utilities/utilities/LockGuard.hpp"
 
 interface ILoggable abstract
@@ -75,25 +75,26 @@ private:
     const std::wstring w;
 };
 
-class LogWriter
+class LogWriter: public LogBase
 {
 public:
     /**
-     * @brief Construct a new Log Writer object
-     */
-    LogWriter();
-
-    /**
-     * @brief Construct a new Log Writer object
+     * @brief log writer constructor with set locale
      *
-     * @param directroy [in] folder path
      * @param locale [in]
      * @throw std::runtime_error
-     *
-     * @warning replace all \ with /
-     * @warning if the directory end does not have '/' or '\\', then add '/'
      */
-    LogWriter(IN const std::wstring& directroy, IN const char* locale);
+    LogWriter(IN const char* locale = "");
+
+    /**
+     * @brief log writer constructor with set locale
+     * @note  refer to LogBase::Initialize()
+     *
+     * @param directroy [in] folder path
+     * @param locale    [in]
+     * @throw std::runtime_error
+     */
+    LogWriter(IN const std::wstring& directroy, IN const char* locale = "");
 
 
 public:
@@ -192,101 +193,54 @@ public:
         static void FileW(IN std::wofstream&, IN const std::wstring&, IN T, IN Types...);
     };
 
-public:
-    /**
-     * @brief create new folder and file
-     *
-     * @param std::wstring [in] folder path
-     * @throw std::runtime_error
-     *
-     * @warning replace all \ with /
-     * @warning if the directory end does not have '/' or '\\', then add '/'
-     */
-    void ChangeDirectory(IN const std::wstring&);
 
 public:
     /**
      * @brief set locale to fout
      *
-     * @param char [in]
+     * @param chconst char*r [in]
      */
     void SetLocale(IN const char*);
-
-    /**
-     * @brief STATIC: set lcale to cout / wcout
-     *
-     * @param char [in]
-     */
-    static void SetLocaleConsole(IN const char*);
-
-    /**
-     * @brief STATIC: set locale global
-     *
-     * @param char [in]
-     */
-    static void SetLocaleGlobal(IN const char*);
 
 public:
     prop(put = SetLocale) const char* Locale;
 
 public:
     /**
-     * @brief create log file
-     *
-     * @throw std::runtime_error
-     */
-    void New();
-
-private:
-    /**
-     * @brief day checking method used in Log() => when the day changes, a new log file is created.
-     *
-     * @throw std::runtime_error
-     */
-    void Update();
-
-public:
-    /**
      * @brief wrtie to the file (e.g. ["time"] => "content") / thread safe
+     * @warning using FileW => std::wstring
      *
      * @tparam T [in] parameter
      * @tparam Types [in] parameter pack
      * @throw std::runtime_error
-     *
-     * @warning using FileW => std::wstring
      */
     template<typename T, typename... Types> void Log(IN T, IN Types...);
 
     /**
      * @brief wrtie to console (e.g. ["time"] => "content") / thread safe
+     * @warning using ConsolW => std::wstring
      *
      * @tparam T [in] parameter
      * @tparam Types [in] parameter pack
-     *
-     * @warning using ConsolW => std::wstring
      */
     template<typename T, typename... Types> void Print(IN T, IN Types...);
 
-private:
+public:
     /**
-     * @brief folder path
+     * @brief check date
+     * @note  LogBase::Update override
+     *
+     * @return true: updated / false: not work
+     * @throw  std::runtime_error
      */
-    std::wstring directory;
+    bool Update();
 
+
+private:
     /**
      * @brief
      */
     std::wofstream fout;
-
-    /**
-     * @brief for timestamp
-     */
-    Timer timer;
-
-    /**
-     * @brief for check day
-     */
-    int day;
 };
 
 #include "LogWriter.ipp"

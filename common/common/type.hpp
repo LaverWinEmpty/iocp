@@ -2,15 +2,15 @@
  * @file  type.hpp
  * @author LaverWinEmpty
  * @brief
- * @version 1.0
- * @date 2023-10-22
+ * @version 0.1.0
+ * @date 2023-10-23
  *
- * @copyright Copyright (c) 2021-2023
+ * @copyright Copyright (c) 2023
  *
  */
 
-#ifndef LWE__TYPES_INL__
-#define LWE__TYPES_INL__
+#ifndef LWE__TYPES_HPP__
+#define LWE__TYPES_HPP__
 
 #include "cstdint"
 
@@ -30,5 +30,39 @@ using ssize_t = int32_t;
 #ifndef _MSC_VER
 #    define abstract
 #endif
+
+#ifndef IN
+#    define IN
+#endif
+
+#ifndef OUT
+#    define OUT
+#endif
+
+#ifndef OPT
+#    define OPT
+#endif
+
+/**
+ * @brief void* wrapper
+ * @note can ++, --
+ */
+
+class Ptr
+{
+    void* address;
+public:
+    Ptr(IN const void* param = nullptr): address(const_cast<void*>(param)) {}
+    Ptr&                      operator=(IN const void* param) { return address = const_cast<void*>(param), *this; }
+    Ptr&                      operator++() { return address = static_cast<int8_t*>(address) + 1, *this; }
+    Ptr&                      operator--() { return address = static_cast<int8_t*>(address) - 1, *this; }
+    Ptr                       operator++(OPT int) { return Ptr((operator++(), static_cast<int8_t*>(address) - 1)); }
+    Ptr                       operator--(OPT int) { return Ptr((operator--(), static_cast<int8_t*>(address) + 1)); }
+    template<typename T> Ptr  operator+(IN T param) const { return Ptr(reinterpret_cast<int8_t*>(address) + param); }
+    template<typename T> Ptr  operator-(IN T param) const { return Ptr(reinterpret_cast<int8_t*>(address) - param); }
+    template<typename T> Ptr& operator+=(IN T param) { return address = static_cast<int8_t*>(address) + param, *this; }
+    template<typename T> Ptr& operator-=(IN T param) { return address = static_cast<int8_t*>(address) - param, *this; }
+    template<typename T> operator T() const { return reinterpret_cast<T>(address); }
+};
 
 #endif

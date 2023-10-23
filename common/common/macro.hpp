@@ -2,14 +2,14 @@
  * @file macro.hpp
  * @author LaverWinEmpty@google.com
  * @brief
- * @version 1.0
- * @date 2023-10-19
+ * @version 0.0.2
+ * @date 2023-10-23
  *
- * @copyright Copyright (c) 2021-2023
+ * @copyright Copyright (c) 2023
  */
 
-#ifndef LWE__MACRO_INL__
-#define LWE__MACRO_INL__
+#ifndef LWE__MACRO_HPP__
+#define LWE__MACRO_HPP__
 
 #if _WIN32 || _WIN64
 #    if _WIN64
@@ -304,21 +304,30 @@
      (((x) & 0xFF00000000) >> 8) | (((x) & 0xFF0000000000) >> 24) | (((x) & 0xFF000000000000) >> 40) |                 \
      (((x) & 0xFF00000000000000) >> 56))
 
-// clang-format off
+#define DISABLE_WARNING_PUSH __pragma(warning(push)) \
+                            __pragma(warning(disable: 26819))
+#define DISABLE_WARNING_POP  __pragma(warning(pop))
 
+
+
+// clang-format off
 /**
- * @brief Duff's device
+ * @brief duff's device
+ * @note use e.g. FAST_LOOP(100, int i = 0; int j = 1, ++i; ++j);
  * 
- * @param init [in] initialize
- * @param count [in] loop count
+ * @param count     [in] loop count
+ * @param init      [in] initialize
  * @param procedure [in] procedure
  */
+#pragma warning(push)
+#pragma warning(disable:26819)
 #define FAST_LOOP(count, init, procedure)                                                                              \
     do {                                                                                                               \
         init;                                                                                                          \
         __int64 loop_count_in_fast_loop_macro = (static_cast<__int64>(count) + 7) >> 3;                                \
         if(count > 0) switch(count & 0b111) {                                                                          \
-                case 0: do { procedure;                                                                                \
+                case 0: do {                                                                                           \
+                        procedure;                                                                                     \
                 case 7: procedure;                                                                                     \
                 case 6: procedure;                                                                                     \
                 case 5: procedure;                                                                                     \
@@ -326,10 +335,10 @@
                 case 3: procedure;                                                                                     \
                 case 2: procedure;                                                                                     \
                 case 1: procedure;                                                                                     \
-                } while(--loop_count_in_fast_loop_macro > 0);                                                      \
+                } while(--loop_count_in_fast_loop_macro > 0);                                                          \
             }                                                                                                          \
-    } while(false)
-
+    } while(false)                                                                                                    
+#pragma warning(pop)
 // clang-format on
 
 /**
@@ -345,17 +354,17 @@
 /**
  * @brief bit on/off
  *
- * @param var [out] variable
+ * @param var   [out] variable
  * @param value [in] bit flag
  * @param isSet [in] ture: var bit on / false: var bit off
  */
 #define SET_BIT_FLAG(var, value, isSet)                                                                                \
     do {                                                                                                               \
         if(isSet) {                                                                                                    \
-            var = static_cast<decltype(var)>(var | static_cast<decltype(var)>(value));                                 \
+            var |= value;                                                                                              \
         }                                                                                                              \
         else {                                                                                                         \
-            var = static_cast<decltype(var)>(var & ~static_cast<decltype(var)>(value));                                \
+            var &= ~value;                                                                                             \
         }                                                                                                              \
     } while(false)
 
@@ -460,5 +469,76 @@
 #define DECLARE_NO_COPY(Type)                                                                                          \
     Type(const Type&)            = delete;                                                                             \
     Type& operator=(const Type&) = delete
+
+/**
+ * @brief enum to bit flag
+ *
+ * @param e [in] enum type name use as bit flag
+ */
+#define DEFINE_ENUM_TO_FLAG(e)                                                                                         \
+    e operator|(IN e a, IN e b)                                                                                        \
+    {                                                                                                                  \
+        return static_cast<e>(static_cast<int>(a) | static_cast<int>(b));                                              \
+    }                                                                                                                  \
+    e operator&(IN e a, IN e b)                                                                                        \
+    {                                                                                                                  \
+        return static_cast<e>(static_cast<int>(a) & static_cast<int>(b));                                              \
+    }                                                                                                                  \
+    e operator^(IN e a, IN e b)                                                                                        \
+    {                                                                                                                  \
+        return static_cast<e>(static_cast<int>(a) ^ static_cast<int>(b));                                              \
+    }                                                                                                                  \
+    e& operator|=(IN OUT e& a, IN e b)                                                                                 \
+    {                                                                                                                  \
+        return a = a | b, a;                                                                                           \
+    }                                                                                                                  \
+    e& operator&=(IN OUT e& a, IN e b)                                                                                 \
+    {                                                                                                                  \
+        return a = a & b, a;                                                                                           \
+    }                                                                                                                  \
+    e& operator^=(IN OUT e& a, IN e b)                                                                                 \
+    {                                                                                                                  \
+        return a = a ^ b, a;                                                                                           \
+    }                                                                                                                  \
+    e operator~(IN e a)                                                                                                \
+    {                                                                                                                  \
+        return static_cast<e>(~static_cast<int>(a));                                                                   \
+    }
+
+#define DECLARE_BLOCK(bit)                                                                                             \
+    struct Block##bit                                                                                                  \
+    {                                                                                                                  \
+        uint8_t& operator[](IN ssize_t index)                                                                          \
+        {                                                                                                              \
+            return data[index];                                                                                        \
+        }                                                                                                              \
+        Block##bit(const int8_t* str): data{ 0 }                                                                       \
+        {                                                                                                              \
+            int loop = TO_BYTE(bit);                                                                                   \
+            FAST_LOOP(loop, int i = 0, data[i] = str[i]; ++i);                                                         \
+        }                                                                                                              \
+        template<typename... Args> Block##bit(Args... args): data{ 0 }                                                 \
+        {                                                                                                              \
+            Ctor(0, args...);                                                                                          \
+        }                                                                                                              \
+        template<typename T> operator T()                                                                              \
+        {                                                                                                              \
+            return reinterpret_cast<T>(data);                                                                          \
+        }                                                                                                              \
+    private:                                                                                                           \
+        template<typename T, typename... Args> void Ctor(ssize_t index, T arg, Args... args)                           \
+        {                                                                                                              \
+            data[index] = static_cast<T>(arg);                                                                         \
+            if(index >= TO_BYTE(bit)) {                                                                                \
+                throw std::out_of_range(EErrMsg::OUT_OF_RANGE);                                                        \
+            }                                                                                                          \
+            Ctor(index + 1, args...);                                                                                  \
+        }                                                                                                              \
+        void Ctor(ssize_t index)                                                                                       \
+        {                                                                                                              \
+            return;                                                                                                    \
+        }                                                                                                              \
+        uint8_t data[TO_BYTE(bit)];                                                                                    \
+    }
 
 #endif

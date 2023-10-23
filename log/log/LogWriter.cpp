@@ -33,16 +33,14 @@ void ILoggable::OnWrite(std::wofstream& wfos)
     wfos << w;
 }
 
-LogWriter::LogWriter():
-    directory(L"./Log/"), day(Timer::ReadSystemTime().tm_mday), timer(Timer::YYYY_MM_DD, Timer::HIDE_WEEKDAY)
+LogWriter::LogWriter(const char* locale): LogBase()
 {
-    New();
+    SetLocale(locale);
 }
 
-LogWriter::LogWriter(const std::wstring& dir, const char* locale):
-    day(Timer::ReadSystemTime().tm_mday), timer(Timer::YYYY_MM_DD, Timer::HIDE_WEEKDAY)
+LogWriter::LogWriter(const std::wstring& dir, const char* locale): LogBase(dir)
 {
-    ChangeDirectory(dir);
+    SetLocale(locale);
 }
 
 LogWriter::~LogWriter()
@@ -50,65 +48,18 @@ LogWriter::~LogWriter()
     fout.close();
 }
 
-void LogWriter::ChangeDirectory(const std::wstring& param)
-{
-    directory = param;
-
-    size_t loop = directory.size();
-    FAST_LOOP(
-        loop,
-        int i = 0,
-        if(directory[i] == '\\') { directory[i] = '/'; } ++i);
-
-    char last = directory.back();
-    if(last != '/' && last != '\\') {
-        directory.push_back('/');
-    }
-
-    New();
-}
-
 void LogWriter::SetLocale(IN const char* param)
 {
     fout.imbue(std::locale(param));
 }
 
-void LogWriter::SetLocaleConsole(IN const char* param)
+bool LogWriter::Update()
 {
-    std::cout.imbue(std::locale(param));
-    std::wcout.imbue(std::locale(param));
-}
-
-void LogWriter::SetLocaleGlobal(const char* param)
-{
-    std::locale::global(std::locale(param));
-}
-
-void LogWriter::New()
-{
-    CreateDirectoryW(directory.c_str(), nullptr);
-
-    if(fout.is_open()) {
-        fout.close();
+    bool isUpdated = LogBase::Update();
+    if(isUpdated) {
+        if(!fout.is_open()) {
+            fout.open(Path(), std::ios_base::out | std::ios_base::app);
+        }
     }
-
-    std::string timestamp = timer.StampingFromSystemDate();
-    fout.open(directory + std::wstring(timestamp.begin(), timestamp.end()) + L".log",
-              std::ios_base::out | std::ios_base::app);
-
-    if(!fout.is_open()) {
-        throw std::runtime_error("log file create failed");
-    }
-}
-
-void LogWriter::Update()
-{
-    int temp = Timer::ReadSystemTime().tm_mday;
-    if(day == temp) {
-        return;
-    }
-
-    // next day
-    day = temp;
-    New();
+    return isUpdated;
 }
