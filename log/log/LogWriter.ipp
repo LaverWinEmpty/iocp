@@ -2,8 +2,8 @@
  * @file    LogWriter.ipp
  * @author  LaverWinEmpty@google.com
  * @brief   log writer definiton
- * @version 1.0
- * @date    2023-10-22
+ * @version 0.0.2
+ * @date    2023-10-23
  *
  * @copyright Copyright (c) 2023
  *

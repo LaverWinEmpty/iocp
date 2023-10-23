@@ -2,8 +2,8 @@
  * @file    Timer.cpp
  * @author  LaverWinEmpty@google.com
  * @brief   timer definition
- * @version 1.0
- * @date    2023-10-19
+ * @version 0.0.2
+ * @date    2023-10-23
  *
  * @copyright Copyright (c) 2023
  *
@@ -11,13 +11,15 @@
 
 #include "Timer.hpp"
 
+DEFINE_ENUM_TO_FLAG(Timer::ETimeStampDisplayFlag);
+
 const char* Timer::MONS[] = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
 const char* Timer::DAYS[] = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
 
 const char Timer::DATE_DELIMITER = '-';
 
-Timer::ETimeStampDateOrder     Timer::orderDefault;
-Timer::ETimeStampShowTypeFlags Timer::typesDefault;
+Timer::ETimeStampDateOrder   Timer::orderDefault;
+Timer::ETimeStampDisplayFlag Timer::typesDefault;
 
 const std::chrono::steady_clock::time_point Timer::beginPoint = std::chrono::steady_clock::now();
 
@@ -26,9 +28,9 @@ Timer::Timer():
     lastDeltaTime(0), lastStopSec(0), order(orderDefault), types(typesDefault)
 {}
 
-Timer::Timer(ETimeStampDateOrder order, int types):
+Timer::Timer(ETimeStampDateOrder order, ETimeStampDisplayFlag types):
     chronometerPoint(std::chrono::steady_clock::now()), lastUpdatePoint(std::chrono::steady_clock::now()),
-    lastDeltaTime(0), lastStopSec(0), order(order), types(static_cast<ETimeStampShowTypeFlags>(types))
+    lastDeltaTime(0), lastStopSec(0), order(order), types(types)
 {}
 
 void Timer::Reset()
@@ -181,32 +183,32 @@ void Timer::SetTimeStampDateOrder(ETimeStampDateOrder param)
 
 void Timer::SetTimeStampShowTypes(int param)
 {
-    types = static_cast<ETimeStampShowTypeFlags>(param);
+    types = static_cast<ETimeStampDisplayFlag>(param);
 }
 
 void Timer::SetTimeStamp12HourClock(IN bool param)
 {
-    SET_BIT_FLAG(types, ETimeStampShowTypeFlags::USE_12HOUR_CLOCK, param);
+    SET_BIT_FLAG(types, ETimeStampDisplayFlag::USE_12HOUR_CLOCK, param);
 }
 
 void Timer::SetTimeStampMonthAsString(bool param)
 {
-    SET_BIT_FLAG(types, ETimeStampShowTypeFlags::USE_MONTH_AS_STRING, param);
+    SET_BIT_FLAG(types, ETimeStampDisplayFlag::USE_MONTH_AS_STRING, param);
 }
 
 void Timer::SetTimeStampHideZero(bool param)
 {
-    SET_BIT_FLAG(types, ETimeStampShowTypeFlags::HIDE_ZERO, param);
+    SET_BIT_FLAG(types, ETimeStampDisplayFlag::HIDE_ZERO, param);
 }
 
 void Timer::SetTimeStampShowWeekday(bool param)
 {
-    SET_BIT_FLAG(types, ETimeStampShowTypeFlags::HIDE_WEEKDAY, param);
+    SET_BIT_FLAG(types, ETimeStampDisplayFlag::HIDE_WEEKDAY, param);
 }
 
 void Timer::SetTimeStampUseEmpty(bool param)
 {
-    SET_BIT_FLAG(types, ETimeStampShowTypeFlags::USE_EMPTY, param);
+    SET_BIT_FLAG(types, ETimeStampDisplayFlag::USE_EMPTY, param);
 }
 
 void Timer::SetTimeStampDateOrderDefault(ETimeStampDateOrder param)
@@ -216,32 +218,32 @@ void Timer::SetTimeStampDateOrderDefault(ETimeStampDateOrder param)
 
 void Timer::SetTimeStampShowTypesDefault(int param)
 {
-    typesDefault = static_cast<ETimeStampShowTypeFlags>(param);
+    typesDefault = static_cast<ETimeStampDisplayFlag>(param);
 }
 
 void Timer::SetTimeStamp12HourClockDefault(bool param)
 {
-    SET_BIT_FLAG(typesDefault, ETimeStampShowTypeFlags::USE_12HOUR_CLOCK, param);
+    SET_BIT_FLAG(typesDefault, ETimeStampDisplayFlag::USE_12HOUR_CLOCK, param);
 }
 
 void Timer::SetTimeStampMonthAsStringDefault(bool param)
 {
-    SET_BIT_FLAG(typesDefault, ETimeStampShowTypeFlags::USE_MONTH_AS_STRING, param);
+    SET_BIT_FLAG(typesDefault, ETimeStampDisplayFlag::USE_MONTH_AS_STRING, param);
 }
 
 void Timer::SetTimeStampHideZeroDefault(bool param)
 {
-    SET_BIT_FLAG(typesDefault, ETimeStampShowTypeFlags::HIDE_ZERO, param);
+    SET_BIT_FLAG(typesDefault, ETimeStampDisplayFlag::HIDE_ZERO, param);
 }
 
 void Timer::SetTimeStampShowWeekdayDefault(bool param)
 {
-    SET_BIT_FLAG(typesDefault, ETimeStampShowTypeFlags::HIDE_WEEKDAY, param);
+    SET_BIT_FLAG(typesDefault, ETimeStampDisplayFlag::HIDE_WEEKDAY, param);
 }
 
 void Timer::SetTimeStampUseEmptyDefault(bool param)
 {
-    SET_BIT_FLAG(typesDefault, ETimeStampShowTypeFlags::USE_EMPTY, param);
+    SET_BIT_FLAG(typesDefault, ETimeStampDisplayFlag::USE_EMPTY, param);
 }
 
 float Timer::GetRunningTime()
@@ -281,15 +283,15 @@ int Timer::FractionalToMS(IN double time)
     return static_cast<int>((time - floor(time)) * 100);
 }
 
-char Timer::EmptyCharacter(ETimeStampShowTypeFlags types)
+char Timer::EmptyCharacter(ETimeStampDisplayFlag types)
 {
-    if(types & ETimeStampShowTypeFlags::USE_EMPTY) {
+    if(types & ETimeStampDisplayFlag::USE_EMPTY) {
         return ' ';
     }
     return '_';
 }
 
-std::string Timer::ToStringDate(tm* param, ETimeStampDateOrder order, ETimeStampShowTypeFlags types, char dateDelim)
+std::string Timer::ToStringDate(tm* param, ETimeStampDateOrder order, ETimeStampDisplayFlag types, char dateDelim)
 {
     // "1900_MON_00" <= 12byte
     char buffer[12] = { 0 };
@@ -297,13 +299,13 @@ std::string Timer::ToStringDate(tm* param, ETimeStampDateOrder order, ETimeStamp
     char day[3] = { 0 };
     char mon[4] = { 0 };
 
-    if(types & ETimeStampShowTypeFlags::USE_MONTH_AS_STRING) {
+    if(types & ETimeStampDisplayFlag::USE_MONTH_AS_STRING) {
         sprintf_s(mon, "%s", MONS[param->tm_mon]);
     }
 
     else {
         int nMon = param->tm_mon + 1;
-        if(types & ETimeStampShowTypeFlags::HIDE_ZERO) {
+        if(types & ETimeStampDisplayFlag::HIDE_ZERO) {
             sprintf_s(mon, "%d", nMon);
         }
         else {
@@ -311,7 +313,7 @@ std::string Timer::ToStringDate(tm* param, ETimeStampDateOrder order, ETimeStamp
         }
     }
 
-    if(types & ETimeStampShowTypeFlags::HIDE_ZERO) {
+    if(types & ETimeStampDisplayFlag::HIDE_ZERO) {
         sprintf_s(day, "%d", param->tm_mday);
     }
     else {
@@ -346,7 +348,7 @@ std::string Timer::ToStringDate(tm* param, ETimeStampDateOrder order, ETimeStamp
         }
     }
 
-    if(types & ETimeStampShowTypeFlags::HIDE_WEEKDAY) {
+    if(types & ETimeStampDisplayFlag::HIDE_WEEKDAY) {
         return buffer;
     }
 
@@ -355,7 +357,7 @@ std::string Timer::ToStringDate(tm* param, ETimeStampDateOrder order, ETimeStamp
     return result + DAYS[param->tm_wday];
 }
 
-std::string Timer::ToStringTime(tm* param, ETimeStampShowTypeFlags types)
+std::string Timer::ToStringTime(tm* param, ETimeStampDisplayFlag types)
 {
     // "00:00:00 AM" <= 12
     char buffer[12] = { 0 };
@@ -363,7 +365,7 @@ std::string Timer::ToStringTime(tm* param, ETimeStampShowTypeFlags types)
     int         hour = param->tm_hour;
     const char* noon = "AM";
 
-    if(types & ETimeStampShowTypeFlags::USE_12HOUR_CLOCK) {
+    if(types & ETimeStampDisplayFlag::USE_12HOUR_CLOCK) {
         // Check AM / PM
         if(hour >= 12) {
             noon = "PM";
@@ -380,15 +382,15 @@ std::string Timer::ToStringTime(tm* param, ETimeStampShowTypeFlags types)
     }
 
     std::string format;
-    if(types & ETimeStampShowTypeFlags::HIDE_SECONDS) {
-        if(types & ETimeStampShowTypeFlags::HIDE_ZERO) {
+    if(types & ETimeStampDisplayFlag::HIDE_SECONDS) {
+        if(types & ETimeStampDisplayFlag::HIDE_ZERO) {
             format = "%d:%d";
         }
         else {
             format = "%02d:%02d";
         }
 
-        if(types & ETimeStampShowTypeFlags::USE_12HOUR_CLOCK) {
+        if(types & ETimeStampDisplayFlag::USE_12HOUR_CLOCK) {
             char empty = EmptyCharacter(types);
             sprintf_s(buffer, (format + "%c%s").c_str(), hour, param->tm_min, empty, noon);
         }
@@ -397,14 +399,14 @@ std::string Timer::ToStringTime(tm* param, ETimeStampShowTypeFlags types)
         }
     }
     else {
-        if(types & ETimeStampShowTypeFlags::HIDE_ZERO) {
+        if(types & ETimeStampDisplayFlag::HIDE_ZERO) {
             format = "%d:%d:%d";
         }
         else {
             format = "%02d:%02d:%02d";
         }
 
-        if(types & ETimeStampShowTypeFlags::USE_12HOUR_CLOCK) {
+        if(types & ETimeStampDisplayFlag::USE_12HOUR_CLOCK) {
             char empty = EmptyCharacter(types);
             sprintf_s(buffer, (format + "%c%s").c_str(), hour, param->tm_min, param->tm_sec, empty, noon);
         }

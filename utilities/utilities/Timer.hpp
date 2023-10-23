@@ -9,13 +9,16 @@
  *
  */
 
-#ifndef LWE__TIMER_H__
-#define LWE__TIMER_H__
+#ifndef LWE__TIMER_HPP__
+#define LWE__TIMER_HPP__
 
 #include "chrono"
 #include "string"
 #include "../../common/common/common.hpp"
 
+/**
+ * @brief timer
+ */
 class Timer
 {
 public:
@@ -32,7 +35,7 @@ public:
     /**
      * @brief option used for timestamp: bit flag
      */
-    enum ETimeStampShowTypeFlags
+    enum ETimeStampDisplayFlag
     {
         INITIALIZE_FALG     = 0,
         USE_MONTH_AS_STRING = (1 << 0),
@@ -43,6 +46,7 @@ public:
         HIDE_YEAR           = (1 << 5),
         HIDE_SECONDS        = (1 << 6),
     };
+
 
 private:
     /**
@@ -69,10 +73,10 @@ public:
     /**
      * @brief Construct a new Timer object
      *
-     * @param order [in] enum
+     * @param order  [in] enum
      * @param option [in] bit flag
      */
-    Timer(IN ETimeStampDateOrder order, IN int option);
+    Timer(IN ETimeStampDateOrder order, IN ETimeStampDisplayFlag option);
 
 public:
     /**
@@ -91,8 +95,7 @@ public:
 public:
     /**
      * @brief calculate delta time
-     *
-     * @warning first call is initialize
+     * @note first call is initialize
      */
     void UpdateDelta();
 
@@ -174,7 +177,7 @@ public:
      * @brief get timestamp from seconds
      *
      * @param time [in] seconds for calculation
-     * @param day [out] date from the overflowed time [optional]
+     * @param day  [out] date from the overflowed time [optional]
      * @return std::string (e.g. "23:59:59.99")
      *
      * @warning HIDE_SECONDS option not working
@@ -315,31 +318,31 @@ private:
     /**
      * @brief
      *
-     * @param ETimeStampShowTypeFlags [in] just check USE_EMPTY
+     * @param ETimeStampDisplayFlag [in] just check USE_EMPTY
      * @return char
      */
-    static char EmptyCharacter(IN ETimeStampShowTypeFlags);
+    static char EmptyCharacter(IN ETimeStampDisplayFlag);
 
 private:
     /**
      * @brief date to timestamp
      *
-     * @param tm [in] time info
-     * @param ETimeStampDateOrder [in] year, month, day order
-     * @param ETimeStampShowTypeFlags [in] options flag
+     * @param tm                    [in] time info
+     * @param ETimeStampDateOrder   [in] year, month, day order
+     * @param ETimeStampDisplayFlag [in] options flag
      * @param dateDelim
      * @return std::string (e.g. "1900-01-01")
      */
-    static std::string ToStringDate(IN tm*, IN ETimeStampDateOrder, IN ETimeStampShowTypeFlags, IN char dateDelim);
+    static std::string ToStringDate(IN tm*, IN ETimeStampDateOrder, IN ETimeStampDisplayFlag, IN char dateDelim);
 
     /**
      * @brief time to timestamp
      *
-     * @param tm [in] time info
-     * @param ETimeStampShowTypeFlags [in] options flag
+     * @param tm                    [in] time info
+     * @param ETimeStampDisplayFlag [in] options flag
      * @return std::string (e.g. "23:59:59")
      */
-    static std::string ToStringTime(IN tm*, IN ETimeStampShowTypeFlags);
+    static std::string ToStringTime(IN tm*, IN ETimeStampDisplayFlag);
 
 private:
     /**
@@ -375,10 +378,9 @@ private:
 
     /**
      * @brief show option: bit flag
-     *
-     * @warning refer to the property
+     * @note refer to the property
      */
-    ETimeStampShowTypeFlags types;
+    ETimeStampDisplayFlag types;
 
 private:
     /**
@@ -389,7 +391,7 @@ private:
     /**
      * @brief STATIC: show option: bit flag
      */
-    static ETimeStampShowTypeFlags typesDefault;
+    static ETimeStampDisplayFlag typesDefault;
 };
 
 #endif
