@@ -1,14 +1,3 @@
-/**
- * @file    Timer.cpp
- * @author  LaverWinEmpty@google.com
- * @brief   timer definition
- * @version 0.0.2
- * @date    2023-10-23
- *
- * @copyright Copyright (c) 2023
- *
- */
-
 #include "Timer.hpp"
 
 DEFINE_ENUM_TO_FLAG(Timer::ETimeStampDisplayFlag);

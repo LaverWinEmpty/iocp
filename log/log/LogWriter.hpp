@@ -2,8 +2,8 @@
  * @file    LogWriter.hpp
  * @author  LaverWinEmpty@google.com
  * @brief   log write utility
- * @version 0.0.2
- * @date    2023-10-23
+ * @version 0.0.3
+ * @date    2023-10-24
  *
  * @copyright Copyright (c) 2023
  *
@@ -118,7 +118,7 @@ public:
          *
          * @tparam T
          * @param std::string [in] delemeter
-         * @param T [in] parameter
+         * @param T           [in] parameter
          */
         template<typename T> static void ConsoleA(IN const std::string&, IN T);
 
@@ -127,7 +127,7 @@ public:
          *
          * @tparam T
          * @param std::wstring [in] delemeter
-         * @param T [in] parameter
+         * @param T            [in] parameter
          */
         template<typename T> static void ConsoleW(IN const std::wstring&, IN T);
 
@@ -136,8 +136,8 @@ public:
          *
          * @tparam T
          * @param std::string [in] delemeter
-         * @param T [in] parameter
-         * @param Types [in] parameter pack
+         * @param T           [in] parameter
+         * @param Types       [in] parameter pack
          */
         template<typename T, typename... Types> static void ConsoleA(IN const std::string&, IN T, IN Types...);
 
@@ -145,9 +145,9 @@ public:
          * @brief STATIC: ascii string write to file / variadic template method
          *
          * @tparam T
-         * @param std::string  [in] delemeter
-         * @param T [in] parameter
-         * @param Types [in] parameter pack
+         * @param std::string [in] delemeter
+         * @param T           [in] parameter
+         * @param Types       [in] parameter pack
          */
         template<typename T, typename... Types> static void ConsoleW(IN const std::wstring&, IN T, IN Types...);
 
@@ -157,7 +157,7 @@ public:
          *
          * @tparam T
          * @param std::string [in] delemeter
-         * @param T [in] parameter
+         * @param T           [in] parameter
          */
         template<typename T> static void FileA(IN std::ofstream&, IN const std::string&, IN T);
 
@@ -166,7 +166,7 @@ public:
          *
          * @tparam T
          * @param std::wstring  [in] delemeter
-         * @param T [in] parameter
+         * @param T             [in] parameter
          */
         template<typename T> static void FileW(IN std::wofstream&, IN const std::wstring&, IN T);
 
@@ -175,8 +175,8 @@ public:
          *
          * @tparam T
          * @param std::wstring [in] delemeter
-         * @param T [in] parameter
-         * @param Types [in] parameter pack
+         * @param T            [in] parameter
+         * @param Types        [in] parameter pack
          */
         template<typename T, typename... Types>
         static void FileA(IN std::ofstream&, IN const std::string&, IN T, IN Types...);
@@ -185,9 +185,9 @@ public:
          * @brief STATIC: wide string write to file / variadic template method
          *
          * @tparam T
-         * @param std::wstring  [in] delemeter
-         * @param T [in] parameter
-         * @param Types [in] parameter pack
+         * @param std::wstring [in] delemeter
+         * @param T            [in] parameter
+         * @param Types        [in] parameter pack
          */
         template<typename T, typename... Types>
         static void FileW(IN std::wofstream&, IN const std::wstring&, IN T, IN Types...);

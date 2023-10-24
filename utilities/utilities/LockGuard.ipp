@@ -1,39 +1,78 @@
-/**
- * @file    LockGuard.ipp
- * @author  LaverWinEmpty@google.com
- * @brief   lockguard definition
- * @version 1.0
- * @date    2023-10-22
- *
- * @copyright Copyright (c) 2023
- */
+template<int N> LockGuard::WrappedMutex      LockGuard::MutexSingleN<N>::wrapper;
+template<typename T> LockGuard::WrappedMutex LockGuard::MutexSingleT<T>::wrapper;
+template<int N> LockGuard::WrappedSpin       LockGuard::SpinSingleN<N>::wrapper;
+template<typename T> LockGuard::WrappedSpin  LockGuard::SpinSingleT<T>::wrapper;
 
-#ifndef LWE__LOCKGUARD_IPP__
-#define LWE__LOCKGUARD_IPP__
+LockGuard::WrappedMutex::WrappedMutex()
+{
+#ifdef _WINDOWS_
+    InitializeCriticalSection(&instance);
+#else
+    pthread_mutex_init(&instance, NULL);
+#endif
+}
 
-template<int N> LockGuard::WrappedMutex       LockGuard::MutexSingleN<N>::wrapper;
-template<typename T> LockGuard::WrappedMutex  LockGuard::MutexSingleT<T>::wrapper;
-template<int N> LockGuard::WrappedAtomic      LockGuard::AtomicSingleN<N>::wrapper;
-template<typename T> LockGuard::WrappedAtomic LockGuard::AtomicSingleT<T>::wrapper;
+LockGuard::WrappedMutex::~WrappedMutex()
+{
+#ifdef _WINDOWS_
+    DeleteCriticalSection(&instance);
+#else
+    pthread_mutex_destroy(&instance);
+#endif
+}
 
 void LockGuard::WrappedMutex::Lock()
 {
-    instance.lock();
+#ifdef _WINDOWS_
+    EnterCriticalSection(&instance);
+#else
+    pthread_mutex_lock(instance)
+#endif
 }
 
 void LockGuard::WrappedMutex::Unlock()
 {
-    instance.unlock();
+#ifdef _WINDOWS_
+    LeaveCriticalSection(&instance);
+#else
+    pthread_mutex_unlock(&instance);
+#endif
 }
 
-void LockGuard::WrappedAtomic::Lock()
+LockGuard::WrappedSpin::WrappedSpin()
 {
-    while(instance.test_and_set(std::memory_order_acquire)) continue;
+#ifdef _WINDOWS_
+    InitializeCriticalSectionAndSpinCount(&instance, 4000);
+#else
+    pthread_spin_init(&instance, PTHREAD_PROCESS_SHARED);
+#endif
 }
 
-void LockGuard::WrappedAtomic::Unlock()
+LockGuard::WrappedSpin::~WrappedSpin()
 {
-    instance.clear(std::memory_order_release);
+#ifdef _WINDOWS_
+    DeleteCriticalSection(&instance);
+#else
+    pthread_spin_destroy(&instance);
+#endif
+}
+
+void LockGuard::WrappedSpin::Lock()
+{
+#ifdef _WINDOWS_
+    EnterCriticalSection(&instance);
+#else
+    pthread_spin_lock(&instance);
+#endif
+}
+
+void LockGuard::WrappedSpin::Unlock()
+{
+#ifdef _WINDOWS_
+    LeaveCriticalSection(&instance);
+#else
+    pthread_spin_unlock(&instance);
+#endif
 }
 
 template<typename T> LockGuard::ILock<T>::ILock(bool isLock)
@@ -60,10 +99,8 @@ template<typename T> void LockGuard::ILock<T>::Unlock()
 
 template<int N> LockGuard::Mutex<N>::Mutex(bool isLock): LockGuard::ILock<LockGuard::MutexSingleN<N>>(isLock) {}
 
-template<int N> LockGuard::Spin<N>::Spin(bool isLock): LockGuard::ILock<LockGuard::AtomicSingleN<N>>(isLock) {}
+template<int N> LockGuard::Spin<N>::Spin(bool isLock): LockGuard::ILock<LockGuard::SpinSingleN<N>>(isLock) {}
 
 template<typename T> TypeLock<T>::Mutex::Mutex(bool isLock): LockGuard::ILock<LockGuard::MutexSingleT<T>>(isLock) {}
 
-template<typename T> TypeLock<T>::Spin::Spin(bool isLock): LockGuard::ILock<LockGuard::AtomicSingleT<T>>(isLock) {}
-
-#endif
+template<typename T> TypeLock<T>::Spin::Spin(bool isLock): LockGuard::ILock<LockGuard::SpinSingleT<T>>(isLock) {}

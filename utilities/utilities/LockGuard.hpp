@@ -12,9 +12,12 @@
 #ifndef LWE__LOCKGUARD_HPP__
 #define LWE__LOCKGUARD_HPP__
 
-#include "mutex"
-#include "atomic"
-#include "../../common/common/macro.hpp"
+#if _WIN32 || _WIN64
+#    include "windows.h"
+#else
+#    include "pthread.h"
+#endif
+#include "../../include/include/includes.hpp"
 
 /**
  * @brief lock guard, using inner class (Mutex<id> / Spin<id>)
@@ -22,6 +25,18 @@
  */
 class LockGuard abstract
 {
+#ifdef _WINDOWS_
+    using MutexType = CRITICAL_SECTION;
+#else
+    using MutexType = pthread_mutex_t;
+#endif
+
+#ifdef _WINDOWS_
+    using SpinType = CRITICAL_SECTION;
+#else
+    using SpinType = pthread_spinlock_t;
+#endif
+
 public:
     /**
      * @brief INTERFACE:
@@ -48,22 +63,28 @@ private:
     class WrappedMutex
     {
     public:
+        WrappedMutex();
+        ~WrappedMutex();
+    public:
         void Lock();
         void Unlock();
     private:
-        std::mutex instance;
+        MutexType instance;
     };
 
     /**
      * @brief wrapper
      */
-    class WrappedAtomic
+    class WrappedSpin
     {
+    public:
+        WrappedSpin();
+        ~WrappedSpin();
     public:
         void Lock();
         void Unlock();
     private:
-        std::atomic_flag instance;
+        SpinType instance;
     };
 
 public:
@@ -92,9 +113,9 @@ public:
      *
      * @tparam id
      */
-    template<int> struct AtomicSingleN
+    template<int> struct SpinSingleN
     {
-        static WrappedAtomic wrapper;
+        static WrappedSpin wrapper;
     };
 
     /**
@@ -102,9 +123,9 @@ public:
      *
      * @tparam id
      */
-    template<typename T> struct AtomicSingleT
+    template<typename T> struct SpinSingleT
     {
-        static WrappedAtomic wrapper;
+        static WrappedSpin wrapper;
     };
 
 public:
@@ -126,7 +147,7 @@ public:
      *
      * @tparam N object id: const int
      */
-    template<int N> class Spin: public ILock<AtomicSingleN<N>>
+    template<int N> class Spin: public ILock<SpinSingleN<N>>
     {
     public:
         Spin(IN bool = true);
@@ -155,7 +176,7 @@ public:
      * @brief object
      * @warning redundant lock => infinite loop
      */
-    class Spin: public LockGuard::ILock<LockGuard::AtomicSingleT<T>>
+    class Spin: public LockGuard::ILock<LockGuard::SpinSingleT<T>>
     {
     public:
         Spin(IN bool = true);

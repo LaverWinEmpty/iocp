@@ -2,8 +2,8 @@
  * @file    LogBase.hpp
  * @author  LaverWinEmpty@google.com
  * @brief   log directory manager
- * @version 0.0.1
- * @date    2023-10-23
+ * @version 0.0.2
+ * @date    2023-10-24
  *
  * @copyright Copyright (c) 2023
  */
@@ -53,9 +53,9 @@ protected:
     /**
      * @brief create the .log file
      *
-     * @return true: create succeed / false: create failed
+     * @return 0: create succeed / else: failed, error code
      */
-    bool New();
+    int New();
 
 protected:
     /**
@@ -64,6 +64,13 @@ protected:
      * @return std::wstring (e.g. "path/to/1900-01-01.log")
      */
     std::wstring Path();
+
+private:
+    /**
+     * @brief replace all \ with /, and push back /
+     */
+    void FixDirectory();
+
 
 public:
     /**
@@ -85,6 +92,11 @@ protected:
      * @brief folder path
      */
     std::wstring directory;
+
+    /**
+     * @brief file path
+     */
+    std::wstring file;
 
     /**
      * @brief for time stamp

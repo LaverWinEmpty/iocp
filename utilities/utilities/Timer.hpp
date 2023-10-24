@@ -13,8 +13,7 @@
 #define LWE__TIMER_HPP__
 
 #include "chrono"
-#include "string"
-#include "../../common/common/common.hpp"
+#include "../../include/include/includes.hpp"
 
 /**
  * @brief timer

@@ -1,14 +1,3 @@
-/**
- * @file    LogWriter.cpp
- * @author  LaverWinEmpty@google.com
- * @brief   log writer definition
- * @version 1.0
- * @date    2023-10-22
- *
- * @copyright Copyright (c) 2023
- *
- */
-
 #include "LogWriter.hpp"
 
 ILoggable::ILoggable(const char* to): a(to), w(a.begin(), a.end()) {}
@@ -57,8 +46,13 @@ bool LogWriter::Update()
 {
     bool isUpdated = LogBase::Update();
     if(isUpdated) {
+        TypeLock<LogBase>::Spin lock;
+        if(fout.is_open()) {
+            fout.close();
+        }
+        fout.open(Path(), std::ios_base::out | std::ios_base::app);
         if(!fout.is_open()) {
-            fout.open(Path(), std::ios_base::out | std::ios_base::app);
+            throw std::strerror(fout.rdstate());
         }
     }
     return isUpdated;

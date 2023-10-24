@@ -1,17 +1,3 @@
-/**
- * @file    LogWriter.ipp
- * @author  LaverWinEmpty@google.com
- * @brief   log writer definiton
- * @version 0.0.2
- * @date    2023-10-23
- *
- * @copyright Copyright (c) 2023
- *
- */
-
-#ifndef LWE__LOGWRITER_INL__
-#define LWE__LOGWRITER_INL__
-
 template<typename T, typename... Types> void LogWriter::Log(T arg, Types... args)
 {
     TypeLock<LogWriter>::Mutex lock;
@@ -94,5 +80,3 @@ void LogWriter::Out::FileW(std::wofstream& fout, const std::wstring& delimiter, 
     }
     FileW(fout, delimiter, args...);
 }
-
-#endif
