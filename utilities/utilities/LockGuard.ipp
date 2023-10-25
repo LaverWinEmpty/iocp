@@ -64,10 +64,12 @@ void LockGuard::WrappedSpin::Lock()
 #else
     pthread_spin_lock(&instance);
 #endif
+    ++count;
 }
 
 void LockGuard::WrappedSpin::Unlock()
 {
+    if(count && --count) return;
 #ifdef _WINDOWS_
     LeaveCriticalSection(&instance);
 #else

@@ -66,10 +66,13 @@ private:
         WrappedMutex();
         ~WrappedMutex();
     public:
+        /** @note first call unconditionally */
         void Lock();
+        /** @warning called first: processing abnomally */
         void Unlock();
     private:
         MutexType instance;
+        uint32_t  count;
     };
 
     /**
@@ -81,10 +84,13 @@ private:
         WrappedSpin();
         ~WrappedSpin();
     public:
+        /** @note first call unconditionally */
         void Lock();
+        /** @warning called first: processing abnomally */
         void Unlock();
     private:
         SpinType instance;
+        uint32_t count;
     };
 
 public:
